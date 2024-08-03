@@ -4,7 +4,7 @@ a web UI for the RC3 aka RCCC aka Recurse Center Cloud Computing!
 
 this is a way for folks from the [Recurse Center](https://www.recurse.com/) to provision virtual servers using the very awesome [Proxmox](https://www.proxmox.com/)!
 
-<img width="865" alt="Screen Shot 2024-08-02 at 10 10 37 PM" src="https://github.com/user-attachments/assets/08a67e09-33ec-44ad-ba1b-67cf8773f54d">
+<img width="400" alt="Screen Shot 2024-08-02 at 10 10 37 PM" src="https://github.com/user-attachments/assets/08a67e09-33ec-44ad-ba1b-67cf8773f54d">
 
 ## how to dev
 
