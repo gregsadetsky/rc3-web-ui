@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  {% if not task_done %}
+    <meta http-equiv="refresh" content="1; url=/task_status/{{ task_id }}">
+  {% else %}
+    <meta http-equiv="refresh" content="1; url=/dashboard">
+  {% endif %}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Doing task...</title>
+</head>
+<body>
+  {{ output_message }}
+  {% if task_done %}
+    <br><br>
+    REDIRECTING YOU!!!!!!!!!
+  {% endif %}
+</body>
+</html>

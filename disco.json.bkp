@@ -1,0 +1,14 @@
+{
+    "version": "1.0",
+    "services":
+    {
+        "web":
+        {
+            "port": 8080,
+            "volumes": [{
+                "name": "disco-recurse-htop",
+                "destinationPath": "/disco-recurse-htop"
+            }]
+        }
+    }
+}
