@@ -21,15 +21,35 @@ Authentication?
 
 # suppressing warnings from `verify_ssl=False` below
 warnings.filterwarnings("ignore", module="urllib3.connectionpool")
-proxmox = ProxmoxAPI(
-    "10.100.7.196:8006",
-    user="root@pam",
-    password=os.environ["PROXMOX_PASSWORD"],
-    verify_ssl=False,
-)
+
+
+def get_proxmox():
+    # "ProxmoxAPI" uses a token that expires after 2 hours!!!!
+    # for the time being, re-create connection on every function call.
+    # a better strategy would be to recreate it only if it's older than 1 hour
+    # (default timeout is 2 hours).
+    # I did try to use an api token (which proxmox is supposed to support)
+    # but I could not connect using the token -- was getting weird errors about the username
+    # being "root@pam!root@pam"...
+    return ProxmoxAPI(
+        "10.100.7.196:8006",
+        user="root@pam",
+        password=os.environ["PROXMOX_PASSWORD"],
+        verify_ssl=False,
+    )
+
+
+# proxmox = ProxmoxAPI(
+#     "10.100.7.196:8006",
+#     user="root@pam",
+#     token_name=os.environ["PROXMOX_TOKEN_NAME"],
+#     token_value=os.environ["PROXMOX_TOKEN_VALUE"],
+#     verify_ssl=False,
+# )
 
 
 def list_all_containers(filter_by_tag_string):
+    proxmox = get_proxmox()
     # let's get all the containers and augment them by
     # getting each one's IP address
     all_containers = proxmox.nodes("pve").lxc().get()
@@ -44,6 +64,7 @@ def list_all_containers(filter_by_tag_string):
 
 
 def get_next_vmid():
+    proxmox = get_proxmox()
     max_vmid = 100
     for node in proxmox.nodes("pve").lxc().get():
         max_vmid = max(node["vmid"], max_vmid)
@@ -52,6 +73,7 @@ def get_next_vmid():
 
 
 def create_container(ssh_public_keys, tag_string):
+    proxmox = get_proxmox()
     # sshpub, sshpriv = normalize_ssh(sshfile)
     # ssh_public_keys = Path(sshpub).read_text()
     invalid_keywords = {"ssh-public-keys": ssh_public_keys}
@@ -96,6 +118,7 @@ def create_container(ssh_public_keys, tag_string):
 
 
 def start_container(vmid):
+    proxmox = get_proxmox()
     proxmox.nodes("pve").lxc(vmid).status.start.post()
     yield (f"Waiting for server #{vmid} to start.")
     while True:
@@ -119,6 +142,7 @@ def start_container(vmid):
 
 
 def delete_container(vmid):
+    proxmox = get_proxmox()
     proxmox.nodes("pve").lxc(vmid).delete()
     yield (f"Deleting server #{vmid}.")
     while True:
@@ -130,6 +154,7 @@ def delete_container(vmid):
 
 
 def stop_container(vmid):
+    proxmox = get_proxmox()
     proxmox.nodes("pve").lxc(vmid).status.stop.post()
     yield (f"Stopping server #{vmid}.")
     while True:
@@ -143,6 +168,7 @@ def stop_container(vmid):
 
 
 def get_ip_addr(vmid):
+    proxmox = get_proxmox()
     interfaces = proxmox.nodes("pve").lxc(vmid).interfaces.get()
     if interfaces is None:
         return None
