@@ -1,11 +1,28 @@
 {
     "version": "1.0",
-    "services": {
-        "web": {
-            "port": 8080
+    "services":
+    {
+        "web":
+        {
+            "port": 8080,
+            "volumes":
+            [
+                {
+                    "name": "sqlite-data",
+                    "destinationPath": "/sqlitedata"
+                }
+            ]
         },
-        "worker": {
-            "command": "python worker.py"
+        "worker":
+        {
+            "command": "python worker.py",
+            "volumes":
+            [
+                {
+                    "name": "sqlite-data",
+                    "destinationPath": "/sqlitedata"
+                }
+            ]
         }
     }
 }
