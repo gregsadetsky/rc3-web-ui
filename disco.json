@@ -12,17 +12,6 @@
                     "destinationPath": "/sqlitedata"
                 }
             ]
-        },
-        "worker":
-        {
-            "command": "python worker.py",
-            "volumes":
-            [
-                {
-                    "name": "sqlite-data",
-                    "destinationPath": "/sqlitedata"
-                }
-            ]
         }
     }
 }
