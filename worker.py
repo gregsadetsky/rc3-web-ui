@@ -88,5 +88,8 @@ def main():
         db.commit()
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    # main()
+    while True:
+        print("worker running")
+        time.sleep(5)
