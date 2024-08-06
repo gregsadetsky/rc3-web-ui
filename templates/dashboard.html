@@ -67,7 +67,7 @@ Server #{{ container.vmid }} - {% if container.status == 'running' %}✅{% else 
 
 PLEASE ENTER AN SSH PUBLIC KEY:
 
-<textarea name="ssh_keys" style="width:700px;height:60px;">{{ ssh_keys }}</textarea>
+<textarea required name="ssh_keys" style="width:700px;height:60px;">{{ ssh_keys }}</textarea>
 {{ ssh_keys_message }}
 
 <center><button type="input" style="color:blue;font-size:30px;">CREATE</button></center>

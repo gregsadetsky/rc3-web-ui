@@ -80,10 +80,9 @@ def main():
             json.loads(task["input_payload"]),
         )
 
-        # set status to done and message to 'Done'
-        # this overwrites any error message that happens......... TODO TODO TODO
+        # set status to done
         db.execute(
-            "UPDATE tasks SET status='done', output_message='Done' WHERE id=?",
+            "UPDATE tasks SET status='done' WHERE id=?",
             (task["id"],),
         )
         db.commit()
