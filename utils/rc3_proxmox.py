@@ -4,12 +4,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
+import sqlite3
 import sys
 import time
 import warnings
 from pathlib import Path
 
 from proxmoxer import ProxmoxAPI
+
+from .vm_install_bore import install_bore
+
+DATABASE_PATH = os.environ["DATABASE_PATH"]
 
 """
 Authentication?
@@ -32,6 +37,7 @@ def get_proxmox():
     # but I could not connect using the token -- was getting weird errors about the username
     # being "root@pam!root@pam"...
     return ProxmoxAPI(
+        # TODO unhardcode
         "10.100.7.196:8006",
         user="root@pam",
         password=os.environ["PROXMOX_PASSWORD"],
@@ -39,16 +45,11 @@ def get_proxmox():
     )
 
 
-# proxmox = ProxmoxAPI(
-#     "10.100.7.196:8006",
-#     user="root@pam",
-#     token_name=os.environ["PROXMOX_TOKEN_NAME"],
-#     token_value=os.environ["PROXMOX_TOKEN_VALUE"],
-#     verify_ssl=False,
-# )
-
-
 def list_all_containers(filter_by_tag_string):
+    db = sqlite3.connect(DATABASE_PATH)
+    db.row_factory = sqlite3.Row
+    cursor = db.cursor()
+
     proxmox = get_proxmox()
     # let's get all the containers and augment them by
     # getting each one's IP address
@@ -59,6 +60,18 @@ def list_all_containers(filter_by_tag_string):
     all_containers = list(all_containers)
     for container in all_containers:
         container["ip_addr"] = get_ip_addr(container["vmid"])
+        # try to lookup bore port in the database
+        try:
+            cursor.execute(
+                "SELECT port FROM bore_ports WHERE vmid=?", (container["vmid"],)
+            )
+            rows = cursor.fetchall()
+            if rows:
+                container["bore_port"] = rows[0]["port"]
+            else:
+                container["bore_port"] = None
+        except sqlite3.OperationalError:
+            container["bore_port"] = None
     # sort by vmid
     return list(sorted(all_containers, key=lambda container: container["vmid"]))
 
@@ -108,6 +121,9 @@ def create_container(ssh_public_keys, tag_string):
     # existing container
     # SORRY FOR THE UGLY PYTHON
     for _ in start_container(vmid):
+        yield _
+
+    for _ in install_bore(vmid):
         yield _
 
     # print()
@@ -186,7 +202,3 @@ def normalize_ssh(sshfile):
         return sshfile, sshfile[:-4]
     else:
         return sshfile + ".pub", sshfile
-
-
-# create_container(sys.argv[1])
-# print(get_ip_addr(102))

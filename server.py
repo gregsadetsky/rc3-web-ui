@@ -43,6 +43,11 @@ def get_db():
         db.execute(
             "CREATE TABLE IF NOT EXISTS ssh_keys (id TEXT PRIMARY KEY, rc_user_id TEXT, ssh_key TEXT)"
         )
+        # create table of bore ports
+        # with columns vmid, bore port
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS bore_ports (vmid TEXT PRIMARY KEY, port TEXT)"
+        )
         db.commit()
 
     return db
