@@ -33,6 +33,8 @@ def install_bore(vmid):
         f"{pct_prefix} wget https://github.com/ekzhang/bore/releases/download/v0.5.1/bore-v0.5.1-x86_64-unknown-linux-musl.tar.gz"
     )
     c.run(f"{pct_prefix} tar -xvf bore-v0.5.1-x86_64-unknown-linux-musl.tar.gz")
+    # rm the tar.gz
+    c.run(f"{pct_prefix} rm bore-v0.5.1-x86_64-unknown-linux-musl.tar.gz")
     c.run(f"{pct_prefix} mv bore /usr/local/bin")
 
     # find the highest bore port, +1 and use that
