@@ -35,6 +35,16 @@ def install_bore(vmid):
     c.run(f"{pct_prefix} tar -xvf bore-v0.5.1-x86_64-unknown-linux-musl.tar.gz")
     c.run(f"{pct_prefix} mv bore /usr/local/bin")
 
+    # find the highest bore port, +1 and use that
+    db = sqlite3.connect(DATABASE_PATH)
+    db.row_factory = sqlite3.Row
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM bore_ports")
+    rows = cursor.fetchall()
+    bore_ports = [int(row["port"]) for row in rows]
+    bore_port = max(bore_ports) + 1 if bore_ports else 20000
+
     systemd_service = f"""[Unit]
 Description=bore service
 After=network.target
@@ -44,7 +54,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-ExecStart=/usr/local/bin/bore local --to 23.136.216.135 22 -s "{BORE_SECRET}" -p 0
+ExecStart=/usr/local/bin/bore local --to 23.136.216.135 22 -s "{BORE_SECRET}" -p {bore_port}
 
 [Install]
 WantedBy=multi-user.target
@@ -65,35 +75,19 @@ WantedBy=multi-user.target
     # and start the service
     c.run(f"{pct_prefix} systemctl enable bore")
     c.run(f"{pct_prefix} systemctl start bore")
-    output = c.run(f"{pct_prefix} systemctl status bore")
-
-    # capture port and insert it into db.....!!!!!!!!!
-    # look for "listening at 23.136.216.135:20109" and extract the port
-    found_port = None
-    bore_output = output.stdout
-    bore_output_lines = bore_output.split("\n")
-    for line in bore_output_lines:
-        if "listening at" in line:
-            res = re.search(r"listening at .*:(\d+)$", line.strip())
-            if res:
-                found_port = res.group(1)
-
-    if not found_port:
-        yield "Failed to find port bore is listening on"
-        return
+    c.run(f"{pct_prefix} systemctl status bore")
 
     # insert or update bore port in db
     # table bore_ports, columns vmid and port
-    db = sqlite3.connect(DATABASE_PATH)
-    db.row_factory = sqlite3.Row
-    cursor = db.cursor()
     cursor.execute("SELECT * FROM bore_ports WHERE vmid=?", (vmid,))
     rows = cursor.fetchall()
     if rows:
-        cursor.execute("UPDATE bore_ports SET port=? WHERE vmid=?", (found_port, vmid))
+        # the same vmid can be re-used by different machines,
+        # so update the row if it exists
+        cursor.execute("UPDATE bore_ports SET port=? WHERE vmid=?", (bore_port, vmid))
     else:
         cursor.execute(
-            "INSERT INTO bore_ports (vmid, port) VALUES (?, ?)", (vmid, found_port)
+            "INSERT INTO bore_ports (vmid, port) VALUES (?, ?)", (vmid, bore_port)
         )
     db.commit()
     db.close()
