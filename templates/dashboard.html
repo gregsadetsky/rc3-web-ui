@@ -34,10 +34,10 @@
 
 ---
 
-## ALL OF YOUR SERVERS
+## ALL OF YOUR MACHINES
 
 {% if all_containers|length == 0 %}
-You don't have any servers yet. Click the button below to create one!!
+You don't have any machines yet. Click the button below to create one!!
 {% endif %}
 
 <div style="font-size:1.3rem">
@@ -46,8 +46,8 @@ You don't have any servers yet. Click the button below to create one!!
 <li>
 <form method='post' action='/change_container_status'>
 <input type="hidden" name="container_id" value="{{ container.vmid }}">
-Server #{{ container.vmid }} - {% if container.status == 'running' %}✅{% else %}🚫{% endif %} <b>{{ container.status }}</b> {% if container.status == 'running' %}<button type="submit" name="action" value="stop">stop</button>{% elif container.status == 'stopped' %}<button name="action" type="submit" value="start">start</button> <button name="action" type="submit" value="delete" onclick="
-    return confirm('Are you sure you want to delete this server? This action cannot be undone!');"
+Machine #{{ container.vmid }} - {% if container.status == 'running' %}✅{% else %}🚫{% endif %} <b>{{ container.status }}</b> {% if container.status == 'running' %}<button type="submit" name="action" value="stop">stop</button>{% elif container.status == 'stopped' %}<button name="action" type="submit" value="start">start</button> <button name="action" type="submit" value="delete" onclick="
+    return confirm('Are you sure you want to delete this machine? This action cannot be undone!');"
 ">delete</button>{% endif %}
 </form>
 {% if container.ip_addr %}
