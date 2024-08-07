@@ -108,12 +108,12 @@ def create_container(ssh_public_keys, tag_string):
         tags=tag_string,
         **invalid_keywords,
     )
-    yield (f"Creating server #{vmid}. (This may take like 10 seconds.)")
+    yield (f"Creating machine #{vmid}. (This may take like 10 seconds.)")
 
     while True:
         task_status = proxmox.nodes("pve").tasks(task_id).status.get()
         if task_status["status"] == "stopped":
-            yield (f"Finished creating server #{vmid}.")
+            yield (f"Finished creating machine #{vmid}.")
             break
         time.sleep(1.0)
 
@@ -136,11 +136,11 @@ def create_container(ssh_public_keys, tag_string):
 def start_container(vmid):
     proxmox = get_proxmox()
     proxmox.nodes("pve").lxc(vmid).status.start.post()
-    yield (f"Waiting for server #{vmid} to start.")
+    yield (f"Waiting for machine #{vmid} to start.")
     while True:
         lxc_status = proxmox.nodes("pve").lxc(vmid).status.current.get()
         if lxc_status["status"] == "running":
-            yield (f"Server #{vmid} has started.")
+            yield (f"Machine #{vmid} has started.")
             break
         time.sleep(0.5)
 
@@ -153,18 +153,18 @@ def start_container(vmid):
         time.sleep(1.0)
 
     if ip_addr is None:
-        yield ("Unable to fetch server's IP address. Check the admin interface?")
+        yield ("Unable to fetch machine's IP address. Check the admin interface?")
         return
 
 
 def delete_container(vmid):
     proxmox = get_proxmox()
     proxmox.nodes("pve").lxc(vmid).delete()
-    yield (f"Deleting server #{vmid}.")
+    yield (f"Deleting machine #{vmid}.")
     while True:
         all_containers = proxmox.nodes("pve").lxc().get()
         if vmid not in [container["vmid"] for container in all_containers]:
-            yield (f"Server #{vmid} has been deleted.")
+            yield (f"Machine #{vmid} has been deleted.")
             break
         time.sleep(0.5)
 
@@ -172,15 +172,15 @@ def delete_container(vmid):
 def stop_container(vmid):
     proxmox = get_proxmox()
     proxmox.nodes("pve").lxc(vmid).status.stop.post()
-    yield (f"Stopping server #{vmid}.")
+    yield (f"Stopping machine #{vmid}.")
     while True:
         lxc_status = proxmox.nodes("pve").lxc(vmid).status.current.get()
         if lxc_status["status"] == "stopped":
-            yield (f"Server #{vmid} has stopped.")
+            yield (f"Machine #{vmid} has stopped.")
             break
         time.sleep(0.5)
 
-    yield (f"Server #{vmid} has been stopped.")
+    yield (f"Machine #{vmid} has been stopped.")
 
 
 def get_ip_addr(vmid):
