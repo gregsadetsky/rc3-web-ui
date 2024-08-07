@@ -51,8 +51,7 @@ Machine #{{ container.vmid }} - {% if container.status == 'running' %}✅{% else
 ">delete</button>{% endif %}
 </form>
 {% if container.ip_addr %}
-- (at the hub) `ssh root@{{ container.ip_addr }}` <a href="#" onclick="copy('ssh root@{{ container.ip_addr }}', this)">copy</a>
-{% if container.bore_port %}- (outside) `ssh -p {{ container.bore_port }} root@23.136.216.135` <a href="#" onclick="copy('ssh -p {{ container.bore_port }} root@23.136.216.135', this)">copy</a>{% endif %}
+- (only if you're at the hub - for now!) `ssh root@{{ container.ip_addr }}` <a href="#" onclick="copy('ssh root@{{ container.ip_addr }}', this)">copy</a>
 {% endif %}
 
 </li>
