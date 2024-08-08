@@ -1,5 +1,9 @@
 # RC3 Web UI!
 
+it's here --->>>> https://rc3.recurse.com/ !!!
+
+---
+
 a web UI for the RC3 aka RCCC aka Recurse Center Cloud Computing!
 
 this is a way for folks from the [Recurse Center](https://www.recurse.com/) to provision virtual servers using the very awesome [Proxmox](https://www.proxmox.com/)!
