@@ -50,11 +50,12 @@ Machine #{{ container.vmid }} - {% if container.status == 'running' %}✅{% else
     return confirm('Are you sure you want to delete this machine? This action cannot be undone!');"
 ">delete</button>{% endif %}
 </form>
-{% if container.ip_addr %}
-- (at the hub) `ssh root@{{ container.ip_addr }}` <a href="#" onclick="copy('ssh root@{{ container.ip_addr }}', this)">copy</a>
-{% if container.bore_port %}- (outside) `ssh -p {{ container.bore_port }} root@23.136.216.135` <a href="#" onclick="copy('ssh -p {{ container.bore_port }} root@23.136.216.135', this)">copy</a>{% endif %}
+{% if container.tmate_connection_string %}
+- `ssh {{ container.tmate_connection_string }}` <a href="#" onclick="copy('ssh {{ container.tmate_connection_string }}', this)">copy</a>
 {% endif %}
-
+{% if container.ip_addr and not container.tmate_connection_string %}
+- (at the hub only) `ssh root@{{ container.ip_addr }}` <a href="#" onclick="copy('ssh root@{{ container.ip_addr }}', this)">copy</a>
+{% endif %}
 </li>
 {% endfor %}
 </ul>
@@ -65,15 +66,8 @@ Machine #{{ container.vmid }} - {% if container.status == 'running' %}✅{% else
 ## CREATE A NEW UBUNTU MACHINE
 
 <form method='post' action='create_new_container'>
-
-PLEASE ENTER AN SSH PUBLIC KEY:
-
-<textarea required name="ssh_keys" style="width:700px;height:60px;">{{ ssh_keys }}</textarea>
-{{ ssh_keys_message }}
-
-<center><button type="input" style="color:blue;font-size:30px;">CREATE</button></center>
+<center><button type="input" style="color:blue;margin-top:15px;margin-bottom:15px;font-size:30px;">CREATE</button></center>
 </form>
-
 
 ---
 

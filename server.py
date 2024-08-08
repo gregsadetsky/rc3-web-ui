@@ -20,7 +20,6 @@ from flask import (
     stream_with_context,
 )
 
-from utils.github_ssh_keys import try_to_get_ssh_keys_from_github_for_rc_user
 from utils.rc3_proxmox import list_all_containers
 from utils.rc_api import get_user_profile
 from utils.rc_oauth_utils import get_rc_oauth
@@ -38,16 +37,12 @@ def get_db():
         db.execute(
             "CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY, type TEXT, input_payload TEXT, status TEXT, output_message TEXT)"
         )
-        # create table of ssh keys
-        # with columns id, rc user id and ssh_key
+        # create table 'tmate'
+        # with columns vmid, ssh connection string
         db.execute(
-            "CREATE TABLE IF NOT EXISTS ssh_keys (id TEXT PRIMARY KEY, rc_user_id TEXT, ssh_key TEXT)"
+            "CREATE TABLE IF NOT EXISTS tmate (vmid INTEGER PRIMARY KEY, ssh_connection_string TEXT)"
         )
-        # create table of bore ports
-        # with columns vmid, bore port
-        db.execute(
-            "CREATE TABLE IF NOT EXISTS bore_ports (vmid TEXT PRIMARY KEY, port TEXT)"
-        )
+
         db.commit()
 
     return db
@@ -69,30 +64,15 @@ def index():
     return render_template("index.html")
 
 
-def fetch_keys_from_db_and_merge_with_github_keys(rc_user_object):
-    message = ""
-
+def _augment_containers_with_tmate_connection_strings(all_containers):
+    # augment containers by finding tmate connection strings
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM ssh_keys WHERE rc_user_id=?", (rc_user_object["id"],))
-
-    github_keys = try_to_get_ssh_keys_from_github_for_rc_user(rc_user_object)
-    if github_keys:
-        message = "(we found these keys for you on github)"
-
-    # fetch all rows and get keys from db
-    db_keys = []
-    rows = cursor.fetchall()
-    if rows:
-        db_keys = [row["ssh_key"].strip() for row in rows]
-        message = "(we found these keys for you in our database)"
-
-    all_keys = list(set(db_keys + github_keys))
-
-    return {
-        "keys": "\n".join(all_keys),
-        "message": message,
-    }
+    cursor.execute("SELECT * FROM tmate")
+    tmate_rows = cursor.fetchall()
+    tmate_dict = {row["vmid"]: row["ssh_connection_string"] for row in tmate_rows}
+    for container in all_containers:
+        container["tmate_connection_string"] = tmate_dict.get(container["vmid"])
 
 
 @app.route("/dashboard")
@@ -102,19 +82,12 @@ def dashboard():
 
     rc_user_id_tag = f"rc-{session['rc_user']['user']['id']}"
     all_containers = list_all_containers(filter_by_tag_string=rc_user_id_tag)
-
-    ssh_key_and_message = fetch_keys_from_db_and_merge_with_github_keys(
-        session["rc_user"]["user"]
-    )
-    ssh_keys = ssh_key_and_message["keys"]
-    ssh_keys_message = ssh_key_and_message["message"]
+    _augment_containers_with_tmate_connection_strings(all_containers)
 
     return render_template(
         "dashboard.html",
         user=session["rc_user"]["user"],
         all_containers=all_containers,
-        ssh_keys_message=ssh_keys_message,
-        ssh_keys=ssh_keys,
     )
 
 
@@ -123,28 +96,10 @@ def create_new_container():
     if session.get("rc_user") is None:
         return get_rc_oauth(app).authorize_redirect(os.environ["RC_OAUTH_REDIRECT_URI"])
 
-    ssh_keys = request.form.get("ssh_keys").strip()
-
-    # store keys in database for this user
-    db = get_db()
-    cursor = db.cursor()
-    # delete all of the existing keys
-    cursor.execute(
-        "DELETE FROM ssh_keys WHERE rc_user_id=?", (session["rc_user"]["user"]["id"],)
-    )
-    # insert all of the keys one by one
-    for ssh_key in ssh_keys.split("\n"):
-        cursor.execute(
-            "INSERT INTO ssh_keys (id, rc_user_id, ssh_key) VALUES (?, ?, ?)",
-            (str(uuid.uuid4()), session["rc_user"]["user"]["id"], ssh_key.strip()),
-        )
-    db.commit()
-
     # insert new task
     task_type = "create_container"
     task_id = str(uuid.uuid4())
     input_payload = {
-        "ssh_public_keys": ssh_keys,
         "tag_string": f'rc-{session["rc_user"]["user"]["id"]}',
     }
     status = "pending"
@@ -218,7 +173,7 @@ def change_container_status():
         "vmid": container_id,
     }
     status = "pending"
-    output_message = "Doing..."
+    output_message = "Queuing task..."
     db = get_db()
     cursor = db.cursor()
     cursor.execute(

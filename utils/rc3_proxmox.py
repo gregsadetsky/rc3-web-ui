@@ -7,12 +7,13 @@ import os
 import sqlite3
 import sys
 import time
+import uuid
 import warnings
 from pathlib import Path
 
 from proxmoxer import ProxmoxAPI
 
-from .vm_install_bore import install_bore
+from .vm_install_tmate import install_tmate
 
 DATABASE_PATH = os.environ["DATABASE_PATH"]
 
@@ -60,18 +61,6 @@ def list_all_containers(filter_by_tag_string):
     all_containers = list(all_containers)
     for container in all_containers:
         container["ip_addr"] = get_ip_addr(container["vmid"])
-        # try to lookup bore port in the database
-        try:
-            cursor.execute(
-                "SELECT port FROM bore_ports WHERE vmid=?", (container["vmid"],)
-            )
-            rows = cursor.fetchall()
-            if rows:
-                container["bore_port"] = rows[0]["port"]
-            else:
-                container["bore_port"] = None
-        except sqlite3.OperationalError:
-            container["bore_port"] = None
     # sort by vmid
     return list(sorted(all_containers, key=lambda container: container["vmid"]))
 
@@ -85,11 +74,8 @@ def get_next_vmid():
     return max_vmid + 1
 
 
-def create_container(ssh_public_keys, tag_string):
+def create_container(tag_string):
     proxmox = get_proxmox()
-    # sshpub, sshpriv = normalize_ssh(sshfile)
-    # ssh_public_keys = Path(sshpub).read_text()
-    invalid_keywords = {"ssh-public-keys": ssh_public_keys}
     vmid = get_next_vmid()
     task_id = proxmox.nodes("pve").lxc.post(
         node="pve",
@@ -106,7 +92,8 @@ def create_container(ssh_public_keys, tag_string):
         swap=512,
         unprivileged=1,
         tags=tag_string,
-        **invalid_keywords,
+        # generate a throwaway secure enough password
+        password=str(uuid.uuid4()),
     )
     yield (f"Creating machine #{vmid}. (This may take like 10 seconds.)")
 
@@ -123,14 +110,8 @@ def create_container(ssh_public_keys, tag_string):
     for _ in start_container(vmid):
         yield _
 
-    for _ in install_bore(vmid):
+    for _ in install_tmate(vmid):
         yield _
-
-    # print()
-    # print("Log in:")
-    # print(f"  $ ssh -i {sshpriv} root@{ip_addr}")
-    # print()
-    # print("Have a nice day.")
 
 
 def start_container(vmid):
