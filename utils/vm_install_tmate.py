@@ -22,7 +22,7 @@ DATABASE_PATH = os.environ["DATABASE_PATH"]
 
 
 def install_tmate(vmid):
-    yield "Installing tmate (this is a good thing)"
+    yield "Installing tmate (this is a good thing.)"
 
     c = Connection(
         # TODO unhardcode

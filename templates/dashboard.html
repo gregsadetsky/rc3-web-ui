@@ -34,14 +34,14 @@
 
 ---
 
-## ALL OF YOUR MACHINES
+## 🐙 ALL OF YOUR MACHINES
 
 {% if all_containers|length == 0 %}
 You don't have any machines yet. Click the button below to create one!!
 {% endif %}
 
 <div style="font-size:1.3rem">
-<ul>
+<ul style="margin-top:30px;margin-bottom:30px;">
 {% for container in all_containers %}
 <li>
 <form method='post' action='/change_container_status'>
@@ -63,11 +63,15 @@ Machine #{{ container.vmid }} - {% if container.status == 'running' %}✅{% else
 
 <hr/>
 
-## CREATE A NEW UBUNTU MACHINE
+## ✨ CREATE A NEW UBUNTU MACHINE
 
 <form method='post' action='create_new_container'>
 <center><button type="input" style="color:blue;margin-top:15px;margin-bottom:15px;font-size:30px;">CREATE</button></center>
 </form>
+
+---
+
+😭 Need help? Head to <a href="/faq">the FAQ</a>...!!
 
 ---
 

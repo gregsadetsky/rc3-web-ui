@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard | Recurse Center Cloud Computing</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/zero-md@3?register"></script>
+    <link rel="stylesheet" href="/static/site.css">
+</head>
+
+<body>
+<zero-md>
+<script type="text/markdown">
+<h1>
+  Recurse Center Cloud Computing
+</h1>
+
+# FAQ
+
+## after ssh'ing into the machine, I see "Session shell restarted" and "Note: press the following sequence...", what do I do?
+
+press 'q', you should get back to a shell.
+
+## how do I fully disconnect from the ssh connection?
+
+just close your terminal window, or if you want to keep the same terminal on your computer, press the ssh escape sequence which is enter then ~ then . (enter, tilde, dot)
+
+## what is the Recurse Center Cloud Computing aka RC3?
+
+a system that lets recursers start and manage and play around with virtual machines in a sandbox environment!
+
+## what are the virtual machines exactly?
+
+for now, they're ubuntu version 23.10. you get 512 mb of ram and 8 gb of storage per machine
+
+## what is the total capacity of the system?
+
+we're running everything on [this kind of server](https://www.newegg.com/dell-precision-t3600-tower/p/2NS-0008-6ZH55), which has 64gb of ram and 1tb of storage. we should be fine for a bit? we'll see!
+
+## why do we connect to the virtual machines via tmate?
+
+the server is located at the hub, and sits on the LAN. it would be possible to give people direct access to the virtual machines via the LAN (i.e. on the 10.100.x.x subnet), BUT these machines would then only be available on the LAN (i.e. only at the hub).
+
+we want remote folks to access and use RC3 as well! and also, even if you're at the hub, but then you go home... wouldn't you still want to be able to ssh in?
+
+[tmate](https://tmate.io/) is really great for this! we love tmate.
+
+## where can I see the source code for RC3?
+
+[it's here!](https://github.com/gregsadetsky/rc3-web-ui)
+
+---
+
+<div style="margin-bottom:50px !important;"><a href="/dashboard">← back to your dashboard</a></div>
+
+</script>        
+</zero-md>
+</body>
+
+</html>

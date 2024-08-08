@@ -95,7 +95,7 @@ def create_container(tag_string):
         # generate a throwaway secure enough password
         password=str(uuid.uuid4()),
     )
-    yield (f"Creating machine #{vmid}. (This may take like 10 seconds.)")
+    yield (f"Creating machine #{vmid}. (This may take like 30 seconds total.)")
 
     while True:
         task_status = proxmox.nodes("pve").tasks(task_id).status.get()
