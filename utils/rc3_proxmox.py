@@ -17,13 +17,6 @@ from .vm_install_tmate import install_tmate
 
 DATABASE_PATH = os.environ["DATABASE_PATH"]
 
-"""
-Authentication?
-
-- this uses root Proxmox password -- obviously this is bad
-- using any kind of hard-coded credential won't work because we need to distribute
-- so user has to supply some credential
-"""
 
 # suppressing warnings from `verify_ssl=False` below
 warnings.filterwarnings("ignore", module="urllib3.connectionpool")
@@ -175,11 +168,3 @@ def get_ip_addr(vmid):
             return interface["inet"].split("/", maxsplit=1)[0]
 
     return None
-
-
-# returns (public, private)
-def normalize_ssh(sshfile):
-    if sshfile.endswith(".pub"):
-        return sshfile, sshfile[:-4]
-    else:
-        return sshfile + ".pub", sshfile
