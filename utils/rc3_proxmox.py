@@ -63,6 +63,8 @@ def get_next_vmid():
     max_vmid = 100
     for node in proxmox.nodes("pve").lxc().get():
         max_vmid = max(node["vmid"], max_vmid)
+    for node in proxmox.nodes("pve").qemu().get():
+        max_vmid = max(node["vmid"], max_vmid)
 
     return max_vmid + 1
 
