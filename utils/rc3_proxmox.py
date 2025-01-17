@@ -75,7 +75,7 @@ def create_container(tag_string):
     task_id = proxmox.nodes("pve").lxc.post(
         node="pve",
         # TODO: how to figure out?
-        ostemplate="local:vztmpl/ubuntu-23.10-standard_23.10-1_amd64.tar.zst",
+        ostemplate="local:vztmpl/ubuntu-24.10-standard_24.10-1_amd64.tar.zst",
         vmid=vmid,
         features="nesting=1",
         # TODO: how to figure out?
